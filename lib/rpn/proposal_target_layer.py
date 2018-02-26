@@ -11,6 +11,7 @@ import numpy as np
 import numpy.random as npr
 from fast_rcnn.config import cfg
 from fast_rcnn.bbox_transform import bbox_transform
+from generate_anchors import generate_anchors
 from utils.cython_bbox import bbox_overlaps
 
 DEBUG = False
@@ -22,6 +23,16 @@ class ProposalTargetLayer(caffe.Layer):
     """
 
     def setup(self, bottom, top):
+        self._anchors = generate_anchors()
+        self._num_anchors = self._anchors.shape[0]
+
+        if DEBUG:
+            print 'anchors:'
+            print self._anchors
+            self._count = 0
+            self._fg_num = 0
+            self._bg_num = 0
+
         layer_params = yaml.load(self.param_str_)
         self._num_classes = layer_params['num_classes']
 
@@ -57,7 +68,7 @@ class ProposalTargetLayer(caffe.Layer):
 
         num_images = 1
         rois_per_image = cfg.TRAIN.BATCH_SIZE / num_images
-        fg_rois_per_image = np.round(cfg.TRAIN.FG_FRACTION * rois_per_image)
+        fg_rois_per_image = int(np.round(cfg.TRAIN.FG_FRACTION * rois_per_image))
 
         # Sample rois with classification labels and bounding box regression
         # targets
@@ -121,7 +132,7 @@ def _get_bbox_regression_labels(bbox_target_data, num_classes):
     bbox_inside_weights = np.zeros(bbox_targets.shape, dtype=np.float32)
     inds = np.where(clss > 0)[0]
     for ind in inds:
-        cls = clss[ind]
+        cls = int(clss[ind])
         start = 4 * cls
         end = start + 4
         bbox_targets[ind, start:end] = bbox_target_data[ind, 1:]

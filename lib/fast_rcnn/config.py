@@ -4,7 +4,7 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick
 # --------------------------------------------------------
-
+ 
 """Fast R-CNN config system.
 
 This file specifies default config options for Fast R-CNN. You should not
@@ -89,7 +89,7 @@ __C.TRAIN.BBOX_NORMALIZE_MEANS = (0.0, 0.0, 0.0, 0.0)
 __C.TRAIN.BBOX_NORMALIZE_STDS = (0.1, 0.1, 0.2, 0.2)
 
 # Train using these proposals
-__C.TRAIN.PROPOSAL_METHOD = 'selective_search'
+__C.TRAIN.PROPOSAL_METHOD = 'rpn'
 
 # Make minibatches from images that have similar aspect ratios (i.e. both
 # tall and thin or both short and wide) in order to avoid wasting computation
@@ -152,7 +152,7 @@ __C.TEST.BBOX_REG = True
 __C.TEST.HAS_RPN = False
 
 # Test using these proposals
-__C.TEST.PROPOSAL_METHOD = 'selective_search'
+__C.TEST.PROPOSAL_METHOD = 'rpn'
 
 ## NMS threshold used on RPN proposals
 __C.TEST.RPN_NMS_THRESH = 0.7
@@ -176,8 +176,7 @@ __C.TEST.RPN_MIN_SIZE = 16
 __C.DEDUP_BOXES = 1./16.
 
 # Pixel mean values (BGR order) as a (1, 1, 3) array
-# We use the same pixel mean for all networks even though it's not exactly what
-# they were trained with
+# These are the values originally used for training VGG16
 __C.PIXEL_MEANS = np.array([[[102.9801, 115.9465, 122.7717]]])
 
 # For reproducibility
@@ -189,15 +188,6 @@ __C.EPS = 1e-14
 # Root directory of project
 __C.ROOT_DIR = osp.abspath(osp.join(osp.dirname(__file__), '..', '..'))
 
-# Data directory
-__C.DATA_DIR = osp.abspath(osp.join(__C.ROOT_DIR, 'data'))
-
-# Model directory
-__C.MODELS_DIR = osp.abspath(osp.join(__C.ROOT_DIR, 'models', 'pascal_voc'))
-
-# Name (or path to) the matlab executable
-__C.MATLAB = 'matlab'
-
 # Place outputs under an experiments directory
 __C.EXP_DIR = 'default'
 
@@ -208,19 +198,17 @@ __C.USE_GPU_NMS = True
 __C.GPU_ID = 0
 
 
-def get_output_dir(imdb, net=None):
+def get_output_dir(imdb, net):
     """Return the directory where experimental artifacts are placed.
-    If the directory does not exist, it is created.
 
     A canonical path is built using the name from an imdb and a network
     (if not None).
     """
-    outdir = osp.abspath(osp.join(__C.ROOT_DIR, 'output', __C.EXP_DIR, imdb.name))
-    if net is not None:
-        outdir = osp.join(outdir, net.name)
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    return outdir
+    path = osp.abspath(osp.join(__C.ROOT_DIR, 'output', __C.EXP_DIR, imdb.name))
+    if net is None:
+        return path
+    else:
+        return osp.join(path, net.name)
 
 def _merge_a_into_b(a, b):
     """Merge config dictionary a into config dictionary b, clobbering the
