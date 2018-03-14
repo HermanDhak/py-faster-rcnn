@@ -13,7 +13,7 @@ import datasets.pascal_voc
 import numpy as np
 
 imageset = 'TRAIN'
-devkit = '/home/ubuntu/capcicum'
+devkit = '/home/ubuntu/grapes'
 
 # def _selective_search_IJCV_top_k(split, year, top_k):
 #     """Return an imdb that uses the top k proposals from the selective search

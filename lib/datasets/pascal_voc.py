@@ -241,6 +241,6 @@ class pascal_voc(datasets.imdb):
             self.config['cleanup'] = True
 
 if __name__ == '__main__':
-    d = datasets.pascal_voc('Train', '/home/ubuntu/capcicum')
+    d = datasets.pascal_voc('Train', '/home/ubuntu/grapes')
     res = d.roidb
     from IPython import embed; embed()
