@@ -24,24 +24,19 @@ import scipy.io as sio
 import caffe, os, sys, cv2
 import argparse
 
-# CLASSES = ('__background__',
-#            'aeroplane', 'bicycle', 'bird', 'boat',
-#            'bottle', 'bus', 'car', 'cat', 'chair',
-#            'cow', 'diningtable', 'dog', 'horse',
-#            'motorbike', 'person', 'pottedplant',
-#            'sheep', 'sofa', 'train', 'tvmonitor')
-
-CLASSES = ('__background__','foreground')
+CLASSES = ('__background__','grape_cluster')
 
 NETS = {'vgg16': ('VGG16',
                   'VGG16_faster_rcnn_final.caffemodel'),
         'zf': ('ZF',
                   'ZF_faster_rcnn_final.caffemodel')}
 
+IMG_PATH = '/home/ubuntu/testimages'
 
 def vis_detections(im, class_name, dets, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
+
     if len(inds) == 0:
         return
 
@@ -66,10 +61,10 @@ def vis_detections(im, class_name, dets, thresh=0.5):
                 bbox=dict(facecolor='blue', alpha=0.5),
                 fontsize=14, color='white')
 
-    ax.set_title(('{} detections with '
-                  'p({} | box) >= {:.1f}').format(class_name, class_name,
-                                                  thresh),
-                  fontsize=14)
+    #ax.set_title(('{} detections with '
+    #              'p({} | box) >= {:.1f}').format(class_name, class_name,
+    #                                              thresh), fontsize=14)
+
     plt.axis('off')
     plt.tight_layout()
     plt.draw()
@@ -78,7 +73,7 @@ def demo(net, image_name):
     """Detect object classes in an image using pre-computed object proposals."""
 
     # Load the demo image
-    im_file = os.path.join(cfg.ROOT_DIR, 'data', 'demo', image_name)
+    im_file = os.path.join(IMG_PATH, image_name)
     im = cv2.imread(im_file)
 
     # Detect all object classes and regress object bounds
@@ -100,7 +95,7 @@ def demo(net, image_name):
                           cls_scores[:, np.newaxis])).astype(np.float32)
         keep = nms(dets, NMS_THRESH)
         dets = dets[keep, :]
-        vis_detections(im, cls, dets, thresh=CONF_THRESH)
+	vis_detections(im, cls, dets, thresh=CONF_THRESH)
 
 def parse_args():
     """Parse input arguments."""
@@ -146,14 +141,11 @@ if __name__ == '__main__':
     for i in xrange(2):
         _, _= im_detect(net, im)
 
-    # im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
-    #             '001763.jpg', '004545.jpg']
+    img_names = os.listdir(IMG_PATH)
 
-    im_names = ['rgb_11_2015-03-19-17-36-34.png']
-
-    for im_name in im_names:
+    for img_name in img_names:
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        print 'Demo for data/demo/{}'.format(im_name)
-        demo(net, im_name)
+        print 'Detection for testimages/{}'.format(img_name)
+        demo(net, img_name)
 
     plt.show()
