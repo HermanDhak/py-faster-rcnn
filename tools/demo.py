@@ -32,8 +32,9 @@ NETS = {'vgg16': ('VGG16',
                   'ZF_faster_rcnn_final.caffemodel')}
 
 IMG_PATH = '/home/ubuntu/testimages'
+OUTPUT_PATH = '/home/ubuntu/output'
 
-def vis_detections(im, class_name, dets, thresh=0.5):
+def vis_detections(im, image_name, class_name, dets, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
 
@@ -65,9 +66,12 @@ def vis_detections(im, class_name, dets, thresh=0.5):
     #              'p({} | box) >= {:.1f}').format(class_name, class_name,
     #                                              thresh), fontsize=14)
 
+    print ('Total detections: ', len(inds))
     plt.axis('off')
     plt.tight_layout()
-    plt.draw()
+    out_file = os.path.join(OUTPUT_PATH, image_name)
+    #plt.draw()
+    plt.savefig(out_file, bbox_inches='tight')
 
 def demo(net, image_name):
     """Detect object classes in an image using pre-computed object proposals."""
@@ -95,7 +99,7 @@ def demo(net, image_name):
                           cls_scores[:, np.newaxis])).astype(np.float32)
         keep = nms(dets, NMS_THRESH)
         dets = dets[keep, :]
-	vis_detections(im, cls, dets, thresh=CONF_THRESH)
+	vis_detections(im, image_name, cls, dets, thresh=CONF_THRESH)
 
 def parse_args():
     """Parse input arguments."""
@@ -147,5 +151,7 @@ if __name__ == '__main__':
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print 'Detection for testimages/{}'.format(img_name)
         demo(net, img_name)
+	# Delete input image after
+        os.remove(IMG_PATH + "/" + img_name)
 
-    plt.show()
+    #plt.show()
