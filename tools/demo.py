@@ -39,7 +39,8 @@ def vis_detections(im, image_name, class_name, dets, thresh=0.5):
     inds = np.where(dets[:, -1] >= thresh)[0]
 
     if len(inds) == 0:
-        return
+        os.rename(IMG_PATH +"/"+ image_name, OUTPUT_PATH +"/"+ image_name)
+	return
 
     im = im[:, :, (2, 1, 0)]
     fig, ax = plt.subplots(figsize=(12, 12))
