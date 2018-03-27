@@ -23,6 +23,7 @@ import numpy as np
 import scipy.io as sio
 import caffe, os, sys, cv2
 import argparse
+import random
 
 CLASSES = ('__background__','grape_cluster')
 
@@ -33,10 +34,14 @@ NETS = {'vgg16': ('VGG16',
 
 IMG_PATH = '/home/ubuntu/testimages'
 OUTPUT_PATH = '/home/ubuntu/output'
+COUNT_FILE = '/home/ubuntu/counts.txt'
+
+total_det = 0
 
 def vis_detections(im, image_name, class_name, dets, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
+    global total_det
 
     if len(inds) == 0:
         os.rename(IMG_PATH +"/"+ image_name, OUTPUT_PATH +"/"+ image_name)
@@ -63,11 +68,8 @@ def vis_detections(im, image_name, class_name, dets, thresh=0.5):
                 bbox=dict(facecolor='blue', alpha=0.5),
                 fontsize=14, color='white')
 
-    #ax.set_title(('{} detections with '
-    #              'p({} | box) >= {:.1f}').format(class_name, class_name,
-    #                                              thresh), fontsize=14)
-
-    print ('Total detections: ', len(inds))
+    print 'Objects detected: {}'.format(len(inds))
+    total_det += len(inds)
     plt.axis('off')
     plt.tight_layout()
     out_file = os.path.join(OUTPUT_PATH, image_name)
@@ -152,7 +154,26 @@ if __name__ == '__main__':
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print 'Detection for testimages/{}'.format(img_name)
         demo(net, img_name)
-	# Delete input image after
+	    # Delete input image after
         os.remove(IMG_PATH + "/" + img_name)
+    
+    print '\n\nTotal objects detected: ', total_det
 
-    #plt.show()
+    # Update the counts file with count and weight. Randomly generate weights
+    f = open(COUNT_FILE, 'r+')
+    counts = map(float, f.readline().split(','))
+    counts[0] += total_det
+    total_weight = 0
+    # For weights, randomly gen a number +- 10% of 400 grams [360, 440]
+    for i in range (0, total_det):
+        total_weight += random.randrange(360, 440, 1)
+
+    # Convert grams to kg
+    counts[1] += total_weight / 1000.0
+    f.seek(0)
+    f.write('{0:.0f},{1:.1f}'.format(counts[0], counts[1]))
+    f.truncate()
+    f.close()
+
+
+
