@@ -24,6 +24,7 @@ import scipy.io as sio
 import caffe, os, sys, cv2
 import argparse
 import random
+from shutil import copyfile
 
 CLASSES = ('__background__','grape_cluster')
 
@@ -44,7 +45,7 @@ def vis_detections(im, image_name, class_name, dets, thresh=0.5):
     global total_det
 
     if len(inds) == 0:
-        os.rename(IMG_PATH +"/"+ image_name, OUTPUT_PATH +"/"+ image_name)
+        copyfile(IMG_PATH +"/"+ image_name, OUTPUT_PATH +"/"+ image_name)
 	return
 
     im = im[:, :, (2, 1, 0)]
